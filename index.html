@@ -314,11 +314,6 @@ function saveAll() {
     body: JSON.stringify(payload)
   }).then(function() {
     showToast('✓ נשמר בהצלחה ב-Google Sheets!', 'success');
-    rows = [];
-    render();
-    document.getElementById('dept-input').value = '';
-    document.getElementById('manager-input').value = '';
-    document.getElementById('date-input').value = new Date().toISOString().split('T')[0];
     statusBar.style.display = 'block';
     statusBar.textContent = '✓ הנתונים נשלחו לגיליון בהצלחה';
     statusBar.style.background = '#e6f4ea';
