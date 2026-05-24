@@ -148,6 +148,7 @@ var PROJECTS = [
 ];
 
 var rows = [];
+var lastSavedRows = [];
 document.getElementById('date-input').value = new Date().toISOString().split('T')[0];
 
 function addRow() {
@@ -221,7 +222,19 @@ function showPage(id) {
 }
 
 function renderSummary() {
-  var totals = getSummary();
+  // Use current rows if available, otherwise last saved rows
+  var displayRows = rows.filter(function(r) { return r.name || r.projectIdx !== ''; });
+  if (displayRows.length === 0) displayRows = lastSavedRows;
+
+  var totals = {};
+  for (var i = 0; i < displayRows.length; i++) {
+    var r = displayRows[i];
+    var p = getProj(r.projectIdx);
+    if (!p || !r.hours) continue;
+    var key = p.code + (p.name ? ' — ' + p.name : '');
+    totals[key] = (totals[key] || 0) + parseFloat(r.hours);
+  }
+
   var keys = Object.keys(totals);
   var sumEl = document.getElementById('summary-content');
   var allEl = document.getElementById('all-rows-content');
@@ -236,13 +249,12 @@ function renderSummary() {
     sumEl.innerHTML = html;
   }
 
-  var filled = rows.filter(function(r) { return r.name || r.projectIdx !== ''; });
-  if (filled.length === 0) {
+  if (displayRows.length === 0) {
     allEl.innerHTML = '<p class="empty">אין רשומות</p>';
   } else {
     var html2 = '';
-    for (var j = 0; j < filled.length; j++) {
-      var r = filled[j];
+    for (var j = 0; j < displayRows.length; j++) {
+      var r = displayRows[j];
       var p = getProj(r.projectIdx);
       html2 += '<div class="summary-row">' +
         '<div>' +
@@ -274,6 +286,9 @@ function saveAll() {
     showToast('יש למלא לפחות שורה אחת מלאה', 'error');
     return;
   }
+
+  // Show summary before clearing
+  lastSavedRows = filled.slice();
 
   var payload = {
     date: date,
